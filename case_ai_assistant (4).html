@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Кейс: ИИ-ассистент для корпоративной базы знаний</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --card: #1e2334;
+    --border: #2a3150;
+    --accent: #4f8ef7;
+    --gold: #f0c040;
+    --text: #e8eaf0;
+    --muted: #8892aa;
+    --radius: 14px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* HEADER */
+  .page-header {
+    background: linear-gradient(135deg, #0d1a3a 0%, #1a0a2e 100%);
+    padding: 32px 20px 0;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(79,142,247,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-label {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(79,142,247,0.12);
+    border: 1px solid rgba(79,142,247,0.3);
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(20px, 5vw, 36px);
+    line-height: 1.25;
+    color: #fff;
+    margin-bottom: 6px;
+    position: relative;
+  }
+  .header-sub {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 28px;
+  }
+  .illustration-wrap {
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 0 10px;
+  }
+  .illustration-wrap svg { width: 100%; height: auto; display: block; }
+
+  /* CASE TEXT */
+  .case-section {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 28px 20px 20px;
+  }
+  .case-section h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+  .case-section p {
+    color: #c4cad8;
+    margin-bottom: 14px;
+    font-size: 14.5px;
+  }
+  .budget-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 20px 0 4px;
+  }
+  .budget-card {
+    flex: 1 1 200px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .budget-card .blabel { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .budget-card .bvalue { font-size: 20px; font-weight: 600; color: var(--accent); }
+  .budget-card .bdesc { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px 0; }
+
+  /* TABS */
+  .tabs-wrapper { max-width: 720px; margin: 0 auto; padding-bottom: 48px; }
+  .tab-bar {
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex-shrink: 0;
+    padding: 13px 16px;
+    border: none;
+    background: none;
+    color: var(--muted);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.2s, border-color 0.2s;
+    white-space: nowrap;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  [data-tab="team1"].active { color: #4f8ef7; border-bottom-color: #4f8ef7; }
+  [data-tab="team2"].active { color: #10b981; border-bottom-color: #10b981; }
+  [data-tab="team3"].active { color: #f59e0b; border-bottom-color: #f59e0b; }
+  [data-tab="team4"].active { color: #ef4444; border-bottom-color: #ef4444; }
+  [data-tab="team5"].active { color: #8b5cf6; border-bottom-color: #8b5cf6; }
+
+  .tab-content { display: none; padding: 20px 16px 0; }
+  .tab-content.active { display: block; }
+
+  /* CARDS */
+  .cards-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin-bottom: 20px; }
+  @media (min-width: 540px) { .cards-grid { grid-template-columns: 1fr 1fr; } }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: border-color 0.2s;
+  }
+  .t1 .card { border-top: 3px solid #4f8ef7; }
+  .t2 .card { border-top: 3px solid #10b981; }
+  .t3 .card { border-top: 3px solid #f59e0b; }
+  .t4 .card { border-top: 3px solid #ef4444; }
+  .t5 .card { border-top: 3px solid #8b5cf6; }
+
+  .card-header { display: flex; align-items: center; gap: 12px; }
+  .avatar { width: 52px; height: 52px; flex-shrink: 0; border-radius: 50%; }
+  .card-title .name { font-size: 13.5px; font-weight: 600; color: #fff; line-height: 1.3; }
+  .t1 .card-title .role { font-size: 11.5px; color: #4f8ef7; margin-top: 2px; }
+  .t2 .card-title .role { font-size: 11.5px; color: #10b981; margin-top: 2px; }
+  .t3 .card-title .role { font-size: 11.5px; color: #f59e0b; margin-top: 2px; }
+  .t4 .card-title .role { font-size: 11.5px; color: #ef4444; margin-top: 2px; }
+  .t5 .card-title .role { font-size: 11.5px; color: #8b5cf6; margin-top: 2px; }
+  .card-body { font-size: 13px; color: #9aa3bc; line-height: 1.65; }
+
+  /* TASK */
+  .task-box { border-radius: var(--radius); padding: 18px 20px; margin-top: 4px; }
+  .t1 .task-box { background: rgba(79,142,247,0.07); border: 1px solid rgba(79,142,247,0.25); }
+  .t2 .task-box { background: rgba(16,185,129,0.07); border: 1px solid rgba(16,185,129,0.25); }
+  .t3 .task-box { background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.25); }
+  .t4 .task-box { background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.25); }
+  .t5 .task-box { background: rgba(139,92,246,0.07); border: 1px solid rgba(139,92,246,0.25); }
+
+  .task-title { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 7px; }
+  .t1 .task-title { color: #4f8ef7; }
+  .t2 .task-title { color: #10b981; }
+  .t3 .task-title { color: #f59e0b; }
+  .t4 .task-title { color: #ef4444; }
+  .t5 .task-title { color: #8b5cf6; }
+
+  .task-box ol { padding-left: 18px; color: #b0bad0; font-size: 13.5px; display: flex; flex-direction: column; gap: 7px; }
+  .task-box li strong { color: #dde3f0; }
+  .timer-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(240,192,64,0.1); border: 1px solid rgba(240,192,64,0.3);
+    color: var(--gold); font-size: 12px; font-weight: 600;
+    border-radius: 20px; padding: 4px 11px; margin-top: 14px;
+  }
+<style>
+/* RADIO TABS - pure CSS, no JS needed */
+.tab-radio { display: none; }
+
+.tabs-wrapper {
+  max-width: 720px;
+  margin: 0 auto;
+  padding-bottom: 48px;
+}
+
+.tab-bar {
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  padding: 0 16px;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+
+.tab-label {
+  flex-shrink: 0;
+  display: block;
+  padding: 14px 18px;
+  color: var(--muted);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+#t1:checked ~ .tabs-wrapper .tab-label[for="t1"],
+#t2:checked ~ .tabs-wrapper .tab-label[for="t2"],
+#t3:checked ~ .tabs-wrapper .tab-label[for="t3"],
+#t4:checked ~ .tabs-wrapper .tab-label[for="t4"],
+#t5:checked ~ .tabs-wrapper .tab-label[for="t5"] { color: var(--active-color); border-bottom-color: var(--active-color); }
+
+#t1:checked ~ .tabs-wrapper .tab-label[for="t1"] { color: #4f8ef7; border-bottom-color: #4f8ef7; }
+#t2:checked ~ .tabs-wrapper .tab-label[for="t2"] { color: #10b981; border-bottom-color: #10b981; }
+#t3:checked ~ .tabs-wrapper .tab-label[for="t3"] { color: #f59e0b; border-bottom-color: #f59e0b; }
+#t4:checked ~ .tabs-wrapper .tab-label[for="t4"] { color: #ef4444; border-bottom-color: #ef4444; }
+#t5:checked ~ .tabs-wrapper .tab-label[for="t5"] { color: #8b5cf6; border-bottom-color: #8b5cf6; }
+
+.tab-panel { display: none; padding: 20px 16px 0; }
+
+#t1:checked ~ .tabs-wrapper #panel1,
+#t2:checked ~ .tabs-wrapper #panel2,
+#t3:checked ~ .tabs-wrapper #panel3,
+#t4:checked ~ .tabs-wrapper #panel4,
+#t5:checked ~ .tabs-wrapper #panel5 { display: block; }
+</style>
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="header-label">Учебный кейс - управление изменениями</div>
+  <h1>Создание ИИ-ассистента:<br>корпоративная база знаний</h1>
+  <p class="header-sub">Анализ стейкхолдеров и стратегия внедрения</p>
+  <div class="illustration-wrap">
+    <svg viewBox="0 0 420 220" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="g1" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#4f8ef7" stop-opacity="0.18"/><stop offset="100%" stop-color="#4f8ef7" stop-opacity="0"/></radialGradient>
+        <radialGradient id="g2" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#7c3aed" stop-opacity="0.15"/><stop offset="100%" stop-color="#7c3aed" stop-opacity="0"/></radialGradient>
+        <filter id="bl"><feGaussianBlur stdDeviation="8"/></filter>
+      </defs>
+      <ellipse cx="210" cy="110" rx="160" ry="80" fill="url(#g1)" filter="url(#bl)"/>
+      <ellipse cx="300" cy="80" rx="80" ry="60" fill="url(#g2)" filter="url(#bl)"/>
+      <line x1="210" y1="110" x2="80" y2="55" stroke="#4f8ef7" stroke-width="1" stroke-opacity="0.3" stroke-dasharray="4 4"/>
+      <line x1="210" y1="110" x2="210" y2="32" stroke="#4f8ef7" stroke-width="1" stroke-opacity="0.3" stroke-dasharray="4 4"/>
+      <line x1="210" y1="110" x2="340" y2="55" stroke="#4f8ef7" stroke-width="1" stroke-opacity="0.3" stroke-dasharray="4 4"/>
+      <line x1="210" y1="110" x2="60" y2="168" stroke="#4f8ef7" stroke-width="1" stroke-opacity="0.25" stroke-dasharray="4 4"/>
+      <line x1="210" y1="110" x2="210" y2="178" stroke="#7c3aed" stroke-width="1" stroke-opacity="0.3" stroke-dasharray="4 4"/>
+      <line x1="210" y1="110" x2="360" y2="168" stroke="#4f8ef7" stroke-width="1" stroke-opacity="0.25" stroke-dasharray="4 4"/>
+      <circle cx="210" cy="110" r="34" fill="#1a2040" stroke="#4f8ef7" stroke-width="1.5"/>
+      <circle cx="210" cy="110" r="27" fill="none" stroke="#4f8ef7" stroke-width="0.5" stroke-opacity="0.35"/>
+      <text x="210" y="104" text-anchor="middle" fill="#4f8ef7" font-size="13" font-weight="700" font-family="sans-serif">ИИ</text>
+      <text x="210" y="120" text-anchor="middle" fill="#8892aa" font-size="9" font-family="sans-serif">ассистент</text>
+      <circle cx="80" cy="48" r="20" fill="#1a2040" stroke="#f0c040" stroke-width="1.2"/>
+      <text x="80" y="53" text-anchor="middle" fill="#f0c040" font-size="15">👤</text>
+      <text x="80" y="66" text-anchor="middle" fill="#8892aa" font-size="8" font-family="sans-serif">Акционер</text>
+      <circle cx="210" cy="28" r="20" fill="#1a2040" stroke="#10b981" stroke-width="1.2"/>
+      <text x="210" y="33" text-anchor="middle" fill="#10b981" font-size="15">🏢</text>
+      <text x="210" y="46" text-anchor="middle" fill="#8892aa" font-size="8" font-family="sans-serif">Руководство</text>
+      <circle cx="340" cy="48" r="20" fill="#1a2040" stroke="#8b5cf6" stroke-width="1.2"/>
+      <text x="340" y="53" text-anchor="middle" fill="#8b5cf6" font-size="15">💻</text>
+      <text x="340" y="66" text-anchor="middle" fill="#8892aa" font-size="8" font-family="sans-serif">ИТ</text>
+      <circle cx="58" cy="168" r="20" fill="#1a2040" stroke="#ef4444" stroke-width="1.2"/>
+      <text x="58" y="173" text-anchor="middle" fill="#ef4444" font-size="15">🔒</text>
+      <text x="58" y="186" text-anchor="middle" fill="#8892aa" font-size="8" font-family="sans-serif">Безопасность</text>
+      <circle cx="210" cy="185" r="20" fill="#1a2040" stroke="#f59e0b" stroke-width="1.2"/>
+      <text x="210" y="190" text-anchor="middle" fill="#f59e0b" font-size="15">👥</text>
+      <text x="210" y="203" text-anchor="middle" fill="#8892aa" font-size="8" font-family="sans-serif">HR</text>
+      <circle cx="362" cy="168" r="20" fill="#1a2040" stroke="#4f8ef7" stroke-width="1.2"/>
+      <text x="362" y="173" text-anchor="middle" fill="#4f8ef7" font-size="15">⚖️</text>
+      <text x="362" y="186" text-anchor="middle" fill="#8892aa" font-size="8" font-family="sans-serif">Юристы</text>
+      <circle r="3" fill="#4f8ef7" opacity="0.8"><animateMotion dur="2.4s" repeatCount="indefinite" path="M210,110 L80,48"/><animate attributeName="opacity" values="0;0.9;0" dur="2.4s" repeatCount="indefinite"/></circle>
+      <circle r="3" fill="#10b981" opacity="0.8"><animateMotion dur="2s" repeatCount="indefinite" begin="0.6s" path="M210,110 L210,28"/><animate attributeName="opacity" values="0;0.9;0" dur="2s" repeatCount="indefinite" begin="0.6s"/></circle>
+      <circle r="3" fill="#8b5cf6" opacity="0.8"><animateMotion dur="2.2s" repeatCount="indefinite" begin="1s" path="M210,110 L340,48"/><animate attributeName="opacity" values="0;0.9;0" dur="2.2s" repeatCount="indefinite" begin="1s"/></circle>
+      <circle r="3" fill="#ef4444" opacity="0.8"><animateMotion dur="2.7s" repeatCount="indefinite" begin="0.3s" path="M210,110 L58,168"/><animate attributeName="opacity" values="0;0.9;0" dur="2.7s" repeatCount="indefinite" begin="0.3s"/></circle>
+      <circle r="3" fill="#f59e0b" opacity="0.8"><animateMotion dur="2.3s" repeatCount="indefinite" begin="1.3s" path="M210,110 L210,185"/><animate attributeName="opacity" values="0;0.9;0" dur="2.3s" repeatCount="indefinite" begin="1.3s"/></circle>
+    </svg>
+  </div>
+</div>
+
+<div class="case-section">
+  <h2>Описание кейса</h2>
+  <p>Мария Денисовна Лаврова, руководитель проекта внедрения ИИ-ассистента, пришла в компанию, когда стратегическое решение уже было принято: вместо запуска универсального ИИ-ассистента компания начала с точечных LLM-решений для юридической и HR-функции, одновременно создавая инфраструктуру для будущего масштабного решения вместе с одним из российских ИТ-гигантов. Такой подход считался более реалистичным: бизнесу нужен был быстрый результат, а риски ошибок, утечек и некачественных ответов на чувствительных данных оставались слишком высокими.</p>
+  <p>Проблема уже стала заметной для всей компании. Юристы тратят до 60% рабочего времени на вычитку и согласование типовых договоров, HR-служба обрабатывает большие потоки однотипных запросов и тысячи резюме, а в компании с офисным контуром около 7 000 сотрудников накоплены терабайты разрозненных знаний и документов.</p>
+  <p>На первом этапе запускаются отдельные ИИ-модули для поиска по внутренним политикам и нормативным документам, подготовки черновиков типовых договоров и кадровых документов, первичного анализа типовых правовых и HR-запросов, а также ответов сотрудникам и менеджерам по стандартным процедурам. Этот вариант дешевле и быстрее: минимальный CAPEX до 10 млн рублей, расходы на команду разработчиков и внешних провайдеров (Интегратор) около 60 млн рублей в год, срок запуска - 3-4 месяца. Но он снимает лишь около 10% рутины и не дает того роста производительности, на который рассчитывает акционер.</p>
+  <p>Параллельно Лаврова должна развивать основу для более масштабной модели на базе собственного облачного решения и отечественных LLM. В перспективе этот контур должен дать компании единую корпоративную память и более сильного интеллектуального ассистента для сложных задач, но требует около 300 млн рублей CAPEX (расходы на железо и на ИТ-сервисы ИТ-гиганта и Интегратора) и еще 100 млн рублей ежегодного OPEX (расходы на лицензионные платежи и интеграцию) в перспективе работающего решения через 9-12 месяцев.</p>
+  <p>Акционер вызвал Марию Денисовну на личную встречу: его особенно интересуют все проекты внедрения ИИ в компании. Теперь ей нужно подготовить план действий по внедрению проекта, определить ключевых стейкхолдеров, оценить их интерес и влияние, понять возможные риски с их стороны и предложить стратегию работы с ними, чтобы проект стартовал без срыва, а дальнейшее развитие инфраструктуры не было заблокировано внутренним сопротивлением.</p>
+  <div class="budget-row">
+    <div class="budget-card">
+      <div class="blabel">Этап 1 - точечные LLM-модули</div>
+      <div class="bvalue">~70 млн ₽/год</div>
+      <div class="bdesc">CAPEX до 10 млн + команда и Интегратор ~60 млн/год. Срок: 3-4 месяца. Снимает ~10% рутины.</div>
+    </div>
+    <div class="budget-card">
+      <div class="blabel">Этап 2 - масштабная платформа</div>
+      <div class="bvalue">~300 млн ₽ CAPEX</div>
+      <div class="bdesc">+100 млн ₽/год OPEX. Единая корпоративная память. Срок: 9-12 месяцев.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<input type="radio" name="tabs" id="t1" class="tab-radio" checked>
+<input type="radio" name="tabs" id="t2" class="tab-radio">
+<input type="radio" name="tabs" id="t3" class="tab-radio">
+<input type="radio" name="tabs" id="t4" class="tab-radio">
+<input type="radio" name="tabs" id="t5" class="tab-radio">
+
+<div class="tabs-wrapper">
+  <div class="tab-bar">
+    <label class="tab-label" for="t1">Команда 1</label>
+    <label class="tab-label" for="t2">Команда 2</label>
+    <label class="tab-label" for="t3">Команда 3</label>
+    <label class="tab-label" for="t4">Команда 4</label>
+    <label class="tab-label" for="t5">Команда 5</label>
+  </div>
+
+  <div id="panel1" class="tab-panel t1">
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-header">
+          <svg class="avatar" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="#1a2a4a"/><circle cx="26" cy="19" r="9" fill="#f0c040" opacity="0.9"/><ellipse cx="26" cy="40" rx="14" ry="9" fill="#f0c040" opacity="0.65"/><path d="M18 14 L22 19 L26 13 L30 19 L34 14 L33 10 L19 10Z" fill="#f0c040" opacity="0.8"/></svg>
+          <div class="card-title"><div class="name">Андрей Сергеевич Власов</div><div class="role">Акционер</div></div>
+        </div>
+        <div class="card-body">Власов давно требует от команды более смелых решений в области цифровизации и считает, что корпоративный центр работает слишком медленно для масштаба бизнеса. В его логике ИИ - не эксперимент, а обязательный инструмент, который должен быстро дать ощутимый рост производительности. Он не склонен долго обсуждать ограничения и обычно раздражается, когда вместо результата слышит про сложности согласований. При этом он любит лично включаться в крупные инициативы и может настойчиво продвигать тех партнеров, которым доверяет. Если проект начнет буксовать, он будет требовать ускорения и более жестких решений.</div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <svg class="avatar" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="#1a3020"/><circle cx="26" cy="19" r="9" fill="#10b981" opacity="0.85"/><ellipse cx="26" cy="40" rx="14" ry="9" fill="#10b981" opacity="0.65"/><rect x="23" y="29" width="6" height="2" rx="1" fill="#10b981" opacity="0.8"/><path d="M24 31 L22 36 L30 36 L28 31Z" fill="#10b981" opacity="0.6"/></svg>
+          <div class="card-title"><div class="name">Алексей Николаевич Громов</div><div class="role">Генеральный директор</div></div>
+        </div>
+        <div class="card-body">Громов поддерживает проект как один из немногих, который может быстро показать эффект для корпоративного центра. Для него важно, чтобы компания выглядела современной, но без ощущения организационного хаоса и лишнего шума внутри. Он внимательно следит за ожиданиями акционера и понимает, что этот проект уже стал заметным элементом повестки. В то же время он не любит перегруженные реформы и предпочитает решения, которые можно быстро объяснить руководителям функций. Если увидит работающий пилот и управляемую команду, будет готов стать лицом проекта. Если же вокруг проекта начнутся конфликты и жалобы, его поддержка быстро станет более сдержанной.</div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <svg class="avatar" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="#2a1a1a"/><circle cx="26" cy="19" r="9" fill="#ef4444" opacity="0.85"/><ellipse cx="26" cy="40" rx="14" ry="9" fill="#ef4444" opacity="0.65"/><path d="M22 25 L22 31 L26 34 L30 31 L30 25 L26 22Z" fill="none" stroke="#ef4444" stroke-width="1.4" opacity="0.9"/></svg>
+          <div class="card-title"><div class="name">Сергей Михайлович Ермаков</div><div class="role">Служба безопасности</div></div>
+        </div>
+        <div class="card-body">Ермаков смотрит на проект прежде всего как на новый контур риска. Его мало впечатляют обещания удобства, если за ними стоит передача чувствительных данных, неясные механизмы доступа или зависимость от внешних моделей. Он не склонен запрещать все по умолчанию, но требует, чтобы архитектура, роли и маршруты данных были понятны до запуска. При таком подходе служба безопасности становится для проекта обязательным фильтром на каждом важном этапе. Ермаков может не выступать публичным противником идеи, но при отсутствии нужных гарантий легко затянет согласования и сузит функциональность до безопасного минимума. Он лоялен акционеру и будет, в первую очедень, выполнять его указания.</div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <svg class="avatar" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="#1a1a2a"/><circle cx="26" cy="19" r="9" fill="#4f8ef7" opacity="0.85"/><ellipse cx="26" cy="40" rx="14" ry="9" fill="#4f8ef7" opacity="0.65"/><line x1="26" y1="25" x2="26" y2="33" stroke="#4f8ef7" stroke-width="1.4" opacity="0.9"/><line x1="21" y1="27" x2="31" y2="27" stroke="#4f8ef7" stroke-width="1.4" opacity="0.9"/><circle cx="21" cy="29" r="2.5" fill="none" stroke="#4f8ef7" stroke-width="1.1" opacity="0.9"/><circle cx="31" cy="29" r="2.5" fill="none" stroke="#4f8ef7" stroke-width="1.1" opacity="0.9"/></svg>
+          <div class="card-title"><div class="name">Ирина Константиновна Белова</div><div class="role">Директор по правовым вопросам</div></div>
+        </div>
+        <div class="card-body">Белова руководит сильной юридической функцией и привыкла, что именно к ее команде обращаются в сложных и чувствительных вопросах. Она не спорит с тем, что юристы перегружены рутиной, а сроки реакции часто вызывают раздражение у бизнеса. Но ее беспокоит, что вместе с автоматизацией типовых задач может начать размываться влияние юридической функции как обязательного участника принятия решений. Белова внимательно смотрит не только на пользу для команды, но и на то, не станет ли проект шагом к сокращению людей или обходу юристов в важных кейсах. Если у нее возникнет ощущение, что ИИ-ассистент постепенно превращают в замену функции, она станет одним из самых жестких критиков инициативы. В споре она опирается на профессиональный авторитет и умеет убедительно говорить о рисках.</div>
+      </div>
+    </div>
+    <div class="task-box">
+      <div class="task-title"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="12" height="12" rx="2" stroke="#4f8ef7" stroke-width="1.4"/><path d="M4.5 7.5h6M4.5 5h6M4.5 10h4" stroke="#4f8ef7" stroke-width="1.2" stroke-linecap="round"/></svg>Задание для команды</div>
+      <ol>
+        <li><strong>Прочитайте</strong> описание всех ваших стейкхолдеров</li>
+        <li><strong>Опишите</strong> их интерес к проекту и риски/действия, которые они могут предпринять по отношению к проекту</li>
+        <li><strong>Оцените</strong> по шкале от 1 до 10 их интерес к проекту и их влияние на проект</li>
+        <li><strong>Будьте готовы</strong> рассказать всей группе</li>
+      </ol>
+      <div class="timer-badge"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6.5" r="4.5" stroke="#f0c040" stroke-width="1.2"/><path d="M6 4V6.5l1.5 1.5" stroke="#f0c040" stroke-width="1.2" stroke-linecap="round"/><path d="M4 1.5h4" stroke="#f0c040" stroke-width="1.2" stroke-linecap="round"/></svg>10 минут на задание</div>
+    </div>
+  </div>
+
+  <div id="panel2" class="tab-panel t2">
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-header">
+          <svg class="avatar" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="#0f2a1a"/><circle cx="26" cy="19" r="9" fill="#10b981" opacity="0.85"/><ellipse cx="26" cy="40" rx="14" ry="9" fill="#10b981" opacity="0.65"/><rect x="21" y="25" width="10" height="11" rx="1" fill="none" stroke="#10b981" stroke-width="1.2" opacity="0.9"/><line x1="23" y1="28" x2="29" y2="28" stroke="#10b981" stroke-width="1" opacity="0.9"/><line x1="23" y1="31" x2="29" y2="31" stroke="#10b981" stroke-width="1" opacity="0.9"/></svg>
+          <div class="card-title"><div class="name">Юристы</div><div class="role">Группа стейкхолдеров</div></div>
+        </div>
+        <div class="card-body">Савин представляет группу юристов, которые ведут большой объем типовой договорной и консультационной работы. Им понятна практическая ценность инструмента, который может быстро находить нужные положения, собирать черновики и напоминать о стандартных формулировках. При этом в юридической среде силен профессиональный рефлекс перепроверять любой чужой текст, особенно если он касается рисков для бизнеса. Поэтому даже те, кто положительно смотрит на ассистента, готовы использовать его скорее как вспомогательный инструмент, а не как источник финального ответа. Для этой группы важно, чтобы руководство не пыталось выдавать ИИ за замену экспертизы. Если такой акцент появится, поддержка быстро станет гораздо осторожнее.</div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <svg class="avatar" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="#1a1030"/><circle cx="26" cy="19" r="9" fill="#8b5cf6" opacity="0.85"/><ellipse cx="26" cy="40" rx="14" ry="9" fill="#8b5cf6" opacity="0.65"/><rect x="20" y="24" width="12" height="4" rx="1" fill="none" stroke="#8b5cf6" stroke-width="1.2" opacity="0.9"/><rect x="20" y="30" width="12" height="4" rx="1" fill="none" stroke="#8b5cf6" stroke-width="1.2" opacity="0.9"/><circle cx="30" cy="26" r="0.9" fill="#8b5cf6"/><circle cx="30" cy="32" r="0.9" fill="#8b5cf6"/></svg>
+          <div class="card-title"><div class="name">Виктор Аркадьевич Поляков</div><div class="role">ИТ-директор</div></div>
+        </div>
+        <div class="card-body">Поляков не против проекта, но воспринимает его как еще одну инициативу, которую хотят запустить быстрее, чем позволяют текущие системы и ресурсы команды. Его заботит не презентация идеи, а то, насколько решение можно встроить в существующую архитектуру, поддерживать и масштабировать без постоянных исключений. Он настороженно относится к любым обещаниям быстрого пилота, если потом поддержка, интеграции и ответственность останутся на ИТ. При этом он понимает, что у проекта высокий приоритет и игнорировать его не получится. Поляков будет помогать, если увидит реалистичный периметр, понятного владельца и готовность учитывать технические ограничения. Но при перегретых ожиданиях именно ИТ станет тем местом, где проект начнет терять скорость.</div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <svg class="avatar" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="#1a2a10"/><circle cx="26" cy="19" r="9" fill="#84cc16" opacity="0.85"/><ellipse cx="26" cy="40" rx="14" ry="9" fill="#84cc16" opacity="0.65"/><polyline points="20,33 23,27 26,30 30,23" fill="none" stroke="#84cc16" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/></svg>
+          <div class="card-title"><div class="name">Вендор ИИ-платформы (российский)</div><div class="role">Группа стейкхолдеров</div></div>
+        </div>
+        <div class="card-body">Марков представляет поставщика платформы и умеет очень убедительно говорить о зрелости технологии, успешных кейсах и скорости запуска. Для него этот проект - шанс закрепиться в крупной компании и открыть путь к более широкому использованию решения в других функциях. Он старается поддерживать высокий уровень ожиданий и показывает, как быстро можно перейти от пилота к масштабированию. При этом часть ограничений, связанных с качеством контента, внутренними процессами и сопротивлением пользователей, в его презентации обычно остается в тени. Вендор заинтересован в расширении проекта и может подталкивать заказчика к более широкому периметру, чем тот реально готов освоить. Его предложения будут выглядеть очень привлекательно, особенно на фоне давления показать быстрый успех.</div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <svg class="avatar" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="#0f1a2a"/><circle cx="26" cy="19" r="9" fill="#38bdf8" opacity="0.85"/><ellipse cx="26" cy="40" rx="14" ry="9" fill="#38bdf8" opacity="0.65"/><circle cx="26" cy="24" r="2" fill="none" stroke="#38bdf8" stroke-width="1.2" opacity="0.9"/><line x1="26" y1="26" x2="26" y2="29" stroke="#38bdf8" stroke-width="1.2" opacity="0.9"/><line x1="21" y1="29" x2="31" y2="29" stroke="#38bdf8" stroke-width="1.2" opacity="0.9"/><circle cx="21" cy="31" r="1.8" fill="none" stroke="#38bdf8" stroke-width="1.1" opacity="0.9"/><circle cx="31" cy="31" r="1.8" fill="none" stroke="#38bdf8" stroke-width="1.1" opacity="0.9"/></svg>
+          <div class="card-title"><div class="name">Дмитрий Павлович Соколов</div><div class="role">Заместитель генерального директора по организационным вопросам</div></div>
+        </div>
+        <div class="card-body">Соколов отвечает за значительную часть корпоративных сервисов и давно ищет способ сократить нагрузку на штабные функции без масштабной реорганизации. Его устраивает идея инструмента, который снимет поток повторяющихся запросов и повысит скорость внутренних сервисов. Он видит в проекте хороший пример управленческой трансформации, если тот будет внедрен аккуратно и без конфликта с руководителями функций. Ему важно, чтобы новая система не выглядела как очередная технология ради технологии, а была понятна бизнесу. Если проект покажет практическую пользу, Соколов будет готов использовать его как пример успешного изменения в своей зоне ответственности. Он охотно поддерживает то, что помогает говорить языком эффективности.</div>
+      </div>
+    </div>
+    <div class="task-box">
+      <div class="task-title"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="12" height="12" rx="2" stroke="#10b981" stroke-width="1.4"/><path d="M4.5 7.5h6M4.5 5h6M4.5 10h4" stroke="#10b981" stroke-width="1.2" stroke-linecap="round"/></svg>Задание для команды</div>
+      <ol>
+        <li><strong>Прочитайте</strong> описание всех ваших стейкхолдеров</li>
+        <li><strong>Опишите</strong> их интерес к проекту и риски/действия, которые они могут предпринять по отношению к проекту</li>
+        <li><strong>Оцените</strong> по шкале от 1 до 10 их интерес к проекту и их влияние на проект</li>
+        <li><strong>Будьте готовы</strong> рассказать всей группе</li>
+      </ol>
+      <div class="timer-badge"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6.5" r="4.5" stroke="#f0c040" stroke-width="1.2"/><path d="M6 4V6.5l1.5 1.5" stroke="#f0c040" stroke-width="1.2" stroke-linecap="round"/><path d="M4 1.5h4" stroke="#f0c040" stroke-width="1.2" stroke-linecap="round"/></svg>10 минут на задание</div>
+    </div>
+  </div>
+
+  <div id="panel3" class="tab-panel t3">
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-header">
+          <svg class="avatar" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="#2a1f0a"/><circle cx="26" cy="19" r="9" fill="#f59e0b" opacity="0.85"/><ellipse cx="26" cy="40" rx="14" ry="9" fill="#f59e0b" opacity="0.65"/><rect x="21" y="29" width="10" height="6" fill="none" stroke="#f59e0b" stroke-width="1.2" opacity="0.9"/><line x1="20" y1="29" x2="32" y2="29" stroke="#f59e0b" stroke-width="1.2" opacity="0.9"/><line x1="26" y1="23" x2="20" y2="29" stroke="#f59e0b" stroke-width="1.2" opacity="0.9"/><line x1="26" y1="23" x2="32" y2="29" stroke="#f59e0b" stroke-width="1.2" opacity="0.9"/></svg>
+          <div class="card-title"><div class="name">Регуляторы / надзорные органы</div><div class="role">Группа стейкхолдеров</div></div>
+        </div>
+        <div class="card-body">Формально Левина не участвует в жизни компании, но именно на ее ведомство часто ссылаются внутренние функции, когда хотят напомнить о границах допустимого. Внешний контур регулирования в отношении данных, трудовых решений и автоматизированных рекомендаций для компании остается чувствительным. Любая ошибка в трактовке правил или небрежность в обращении с данными может быстро превратить внутренний пилот в предмет внешнего внимания. Для проектной команды это не ежедневный собеседник, но очень реальный источник ограничений. Именно через ссылку на регуляторные риски внутри компании могут усиливаться требования к контролю, прозрачности и документированию решений.</div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <svg class="avatar" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="#2a200a"/><circle cx="26" cy="19" r="9" fill="#fbbf24" opacity="0.85"/><ellipse cx="26" cy="40" rx="14" ry="9" fill="#fbbf24" opacity="0.65"/><circle cx="22" cy="25" r="3" fill="none" stroke="#fbbf24" stroke-width="1.2" opacity="0.9"/><circle cx="30" cy="25" r="3" fill="none" stroke="#fbbf24" stroke-width="1.2" opacity="0.9"/><path d="M17 35 Q20 30 22 30" fill="none" stroke="#fbbf24" stroke-width="1.2" stroke-linecap="round" opacity="0.9"/><path d="M30 30 Q32 30 35 35" fill="none" stroke="#fbbf24" stroke-width="1.2" stroke-linecap="round" opacity="0.9"/></svg>
+          <div class="card-title"><div class="name">Наталья Андреевна Мельник</div><div class="role">Директор по персоналу</div></div>
+        </div>
+        <div class="card-body">Мельник давно сталкивается с тем, что HR-команда тратит слишком много времени на повторяющиеся запросы менеджеров и сотрудников. Ей нравится идея сервиса, который снимет часть потока и ускорит ответы по типовым ситуациям. При этом она хорошо понимает, что в вопросах персонала ошибка звучит громче, чем в ИТ-проектах: сотрудники быстро теряют доверие, если ответы непоследовательны или выглядят безлично. Она также думает о настроении внутри самой HR-функции, где часть коллег может воспринять инициативу как сигнал о будущей замене. Поэтому Мельник поддерживает проект, но скорее как аккуратное сервисное внедрение, чем как агрессивную автоматизацию. Для нее важны и репутация функции, и качество пользовательского опыта.</div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <svg class="avatar" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="#0f1f2a"/><circle cx="26" cy="19" r="9" fill="#06b6d4" opacity="0.85"/><ellipse cx="26" cy="40" rx="14" ry="9" fill="#06b6d4" opacity="0.65"/><path d="M26 22 Q30 26 30 31 L26 35 L22 31 Q22 26 26 22Z" fill="none" stroke="#06b6d4" stroke-width="1.2" opacity="0.9"/><circle cx="26" cy="28" r="1.5" fill="#06b6d4" opacity="0.9"/></svg>
+          <div class="card-title"><div class="name">Мария Денисовна Лаврова</div><div class="role">Руководитель проекта внедрения ИИ-ассистента</div></div>
+        </div>
+        <div class="card-body">Лаврова воспринимает проект как возможность показать быстрый и заметный результат на уровне всей компании. Она энергична, хорошо собирает людей вокруг идеи и умеет говорить с руководителями о выгодах и сроках. Ей важно, чтобы запуск не превратился в бесконечную серию согласований, поэтому она постоянно ищет короткий путь к решению. Из-за этого у коллег иногда возникает ощущение, что проектная команда недооценивает глубину сопротивления и рассчитывает, что организационные вопросы решатся сами собой. Лаврова искренне верит, что первые успехи переломят скепсис. Но если обещания окажутся слишком смелыми, именно ей придется первой объяснять, почему поддержка стейкхолдеров оказалась слабее, чем ожидалось.</div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <svg class="avatar" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="#1a2a20"/><circle cx="26" cy="19" r="9" fill="#4ade80" opacity="0.85"/><ellipse cx="26" cy="40" rx="14" ry="9" fill="#4ade80" opacity="0.65"/><rect x="21" y="27" width="10" height="8" rx="1" fill="none" stroke="#4ade80" stroke-width="1.2" opacity="0.9"/><path d="M23 27 L23 25 Q23 23 26 23 Q29 23 29 25 L29 27" fill="none" stroke="#4ade80" stroke-width="1.2" opacity="0.9"/></svg>
+          <div class="card-title"><div class="name">Линейные менеджеры</div><div class="role">Группа стейкхолдеров</div></div>
+        </div>
+        <div class="card-body">Лебедева руководит бизнес-подразделением и постоянно сталкивается с тем, что ответы от HR и юристов приходится ждать слишком долго для темпа операционной работы. Для нее ИИ-ассистент - это прежде всего обещание более быстрых и понятных решений по типовым вопросам, без длительной переписки и очередей. Она охотно поддержит сервис, если он действительно поможет менеджерам действовать быстрее. Но в повседневной нагрузке она вряд ли будет тонко различать, где заканчивается типовой кейс и начинается ситуация, требующая участия эксперта. Поэтому есть риск, что менеджеры начнут использовать инструмент шире, чем задумывала проектная команда. Для бизнеса это будет выглядеть как удобство, для функций - как новая зона риска.</div>
+      </div>
+    </div>
+    <div class="task-box">
+      <div class="task-title"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="12" height="12" rx="2" stroke="#f59e0b" stroke-width="1.4"/><path d="M4.5 7.5h6M4.5 5h6M4.5 10h4" stroke="#f59e0b" stroke-width="1.2" stroke-linecap="round"/></svg>Задание для команды</div>
+      <ol>
+        <li><strong>Прочитайте</strong> описание всех ваших стейкхолдеров</li>
+        <li><strong>Опишите</strong> их интерес к проекту и риски/действия, которые они могут предпринять по отношению к проекту</li>
+        <li><strong>Оцените</strong> по шкале от 1 до 10 их интерес к проекту и их влияние на проект</li>
+        <li><strong>Будьте готовы</strong> рассказать всей группе</li>
+      </ol>
+      <div class="timer-badge"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6.5" r="4.5" stroke="#f0c040" stroke-width="1.2"/><path d="M6 4V6.5l1.5 1.5" stroke="#f0c040" stroke-width="1.2" stroke-linecap="round"/><path d="M4 1.5h4" stroke="#f0c040" stroke-width="1.2" stroke-linecap="round"/></svg>10 минут на задание</div>
+    </div>
+  </div>
+
+  <div id="panel4" class="tab-panel t4">
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-header">
+          <svg class="avatar" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="#2a1515"/><circle cx="26" cy="19" r="9" fill="#ef4444" opacity="0.85"/><ellipse cx="26" cy="40" rx="14" ry="9" fill="#ef4444" opacity="0.65"/><polygon points="26,23 27.5,27.5 32,27.5 28.5,30 30,34.5 26,32 22,34.5 23.5,30 20,27.5 24.5,27.5" fill="none" stroke="#ef4444" stroke-width="1" opacity="0.9"/></svg>
+          <div class="card-title"><div class="name">Старшие юристы</div><div class="role">Группа стейкхолдеров</div></div>
+        </div>
+        <div class="card-body">Демин - опытный юрист, к мнению которого прислушиваются и коллеги, и бизнес. Он привык, что именно сложность профессионального суждения отличает сильную юридическую функцию от простого набора шаблонов. Идея ИИ-ассистента вызывает у него двойственное отношение: он видит, что часть рутинной работы можно ускорить, но одновременно ощущает, что от старших экспертов теперь могут ожидать большего объема работы за то же время. В разговорах он часто подчеркивает, что ошибки в юридической практике стоят компании слишком дорого, чтобы доверять им модным инструментам. Его скепсис хорошо упакован в профессиональные аргументы, поэтому звучит убедительно. Если такие люди не будут вовлечены правильно, они легко зададут тон всей реакции функции.</div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <svg class="avatar" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="#1a1a1a"/><circle cx="26" cy="19" r="9" fill="#94a3b8" opacity="0.85"/><ellipse cx="26" cy="40" rx="14" ry="9" fill="#94a3b8" opacity="0.65"/><text x="26" y="31" text-anchor="middle" fill="#94a3b8" font-size="12" font-weight="700" opacity="0.9">?</text></svg>
+          <div class="card-title"><div class="name">Алексей Николаевич Громов</div><div class="role">Генеральный директор</div></div>
+        </div>
+        <div class="card-body">Громов публично не спорит с цифровой повесткой, но в узком кругу не раз говорил, что мода на ИИ сильно опережает реальную пользу для бизнеса. Он считает, что компания уже переживала несколько дорогих инициатив, которые громко запускались, но так и не меняли повседневную работу. Его настораживает то, что вокруг проекта слишком много энтузиазма и слишком мало доказанного эффекта. При этом он понимает, что полностью остановить тему не сможет из-за позиции акционера. Скорее он будет ждать первых признаков слабого результата, чтобы сократить масштаб или вернуть проект в более безопасные рамки. Для него важнее не инновационность сама по себе, а отсутствие репутационного и управленческого провала.</div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <svg class="avatar" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="#1a1520"/><circle cx="26" cy="19" r="9" fill="#fb7185" opacity="0.85"/><ellipse cx="26" cy="40" rx="14" ry="9" fill="#fb7185" opacity="0.65"/><rect x="20" y="24" width="12" height="11" rx="1" fill="none" stroke="#fb7185" stroke-width="1.2" opacity="0.9"/><line x1="23" y1="27" x2="23" y2="32" stroke="#fb7185" stroke-width="1" opacity="0.9"/><line x1="26" y1="27" x2="26" y2="32" stroke="#fb7185" stroke-width="1" opacity="0.9"/><line x1="29" y1="27" x2="29" y2="32" stroke="#fb7185" stroke-width="1" opacity="0.9"/><line x1="21" y1="29.5" x2="31" y2="29.5" stroke="#fb7185" stroke-width="1" opacity="0.9"/></svg>
+          <div class="card-title"><div class="name">Павел Игоревич Зорин</div><div class="role">Финансовый директор</div></div>
+        </div>
+        <div class="card-body">Зорин относится к проекту без романтики и просит говорить с ним только на языке цифр. Его интересует не сам факт внедрения ИИ, а конкретный экономический эффект, сроки окупаемости и объем затрат на пилот и масштабирование. Он легко поддержит инициативу, если увидит ясный бизнес-кейс и дисциплину в расходах. Но если обсуждение будет строиться вокруг общих обещаний и стратегической важности, Зорин быстро начнет задавать неудобные вопросы про альтернативы и приоритеты. Он умеет тормозить проекты не громкими возражениями, а требованием все точнее обосновывать бюджет. Без его согласия масштаб у проекта вряд ли будет большим.</div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <svg class="avatar" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="#0f1a1f"/><circle cx="26" cy="19" r="9" fill="#22d3ee" opacity="0.85"/><ellipse cx="26" cy="40" rx="14" ry="9" fill="#22d3ee" opacity="0.65"/><path d="M22 24 L19 27 L22 30" fill="none" stroke="#22d3ee" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/><path d="M30 24 L33 27 L30 30" fill="none" stroke="#22d3ee" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/><line x1="24" y1="22" x2="28" y2="32" stroke="#22d3ee" stroke-width="1" stroke-linecap="round" opacity="0.7"/></svg>
+          <div class="card-title"><div class="name">Команда разработки ИИ-ассистента</div><div class="role">Группа стейкхолдеров</div></div>
+        </div>
+        <div class="card-body">Команда разработки сосредоточена на том, чтобы как можно быстрее собрать рабочее решение и перевести обсуждение из уровня идей в уровень продукта. Им важно, чтобы требования были выполнимыми, а число исключений и частных сценариев не разрасталось до бесконечности. Они быстро раздражаются, когда бизнес приносит противоречивые ожидания или требует одновременно и гибкости, и полной безошибочности. Для разработчиков проект - прежде всего задача на функциональность, сроки и доступ к данным. Они готовы двигаться быстро, если вокруг есть ясные рамки и ответственные эксперты со стороны функций. Но в их оптике организационное напряжение и скрытое сопротивление часто кажутся второстепенными по сравнению с самим решением.</div>
+      </div>
+    </div>
+    <div class="task-box">
+      <div class="task-title"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="12" height="12" rx="2" stroke="#ef4444" stroke-width="1.4"/><path d="M4.5 7.5h6M4.5 5h6M4.5 10h4" stroke="#ef4444" stroke-width="1.2" stroke-linecap="round"/></svg>Задание для команды</div>
+      <ol>
+        <li><strong>Прочитайте</strong> описание всех ваших стейкхолдеров</li>
+        <li><strong>Опишите</strong> их интерес к проекту и риски/действия, которые они могут предпринять по отношению к проекту</li>
+        <li><strong>Оцените</strong> по шкале от 1 до 10 их интерес к проекту и их влияние на проект</li>
+        <li><strong>Будьте готовы</strong> рассказать всей группе</li>
+      </ol>
+      <div class="timer-badge"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6.5" r="4.5" stroke="#f0c040" stroke-width="1.2"/><path d="M6 4V6.5l1.5 1.5" stroke="#f0c040" stroke-width="1.2" stroke-linecap="round"/><path d="M4 1.5h4" stroke="#f0c040" stroke-width="1.2" stroke-linecap="round"/></svg>10 минут на задание</div>
+    </div>
+  </div>
+
+  <div id="panel5" class="tab-panel t5">
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-header">
+          <svg class="avatar" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="#1a1030"/><circle cx="26" cy="19" r="9" fill="#a78bfa" opacity="0.85"/><ellipse cx="26" cy="40" rx="14" ry="9" fill="#a78bfa" opacity="0.65"/><circle cx="26" cy="24" r="3" fill="none" stroke="#a78bfa" stroke-width="1.2" opacity="0.9"/><rect x="23" y="29" width="6" height="5" rx="1" fill="none" stroke="#a78bfa" stroke-width="1.2" opacity="0.9"/><line x1="26" y1="27" x2="26" y2="29" stroke="#a78bfa" stroke-width="1.2" opacity="0.9"/></svg>
+          <div class="card-title"><div class="name">Дмитрий Павлович Соколов</div><div class="role">Заместитель генерального директора по организационным вопросам</div></div>
+        </div>
+        <div class="card-body">Соколов формально не возражает против проекта, но воспринимает его настороженно. Он понимает, что усиление цифровых сервисов в корпоративном центре может со временем изменить баланс влияния между функциями и руководителями, которые сегодня контролируют доступ к экспертизе и процессам. Ему не нравится, когда под лозунгом эффективности запускаются изменения, способные перераспределить реальную власть в организации. Он будет задавать много вопросов о том, кто именно станет владельцем решения, кто будет контролировать контент и как изменится роль его блока. При внешней корректности он вполне способен замедлять обсуждения и требовать дополнительных согласований. Особенно если почувствует угрозу для своего управленческого веса.</div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <svg class="avatar" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="#2a1015"/><circle cx="26" cy="19" r="9" fill="#f43f5e" opacity="0.85"/><ellipse cx="26" cy="40" rx="14" ry="9" fill="#f43f5e" opacity="0.65"/><path d="M21 28 Q26 23 31 28" fill="none" stroke="#f43f5e" stroke-width="1.5" stroke-linecap="round" opacity="0.9"/><path d="M21 28 Q26 33 31 28" fill="none" stroke="#f43f5e" stroke-width="1.5" stroke-linecap="round" opacity="0.9"/></svg>
+          <div class="card-title"><div class="name">Сергей Михайлович Ермаков</div><div class="role">Служба безопасности</div></div>
+        </div>
+        <div class="card-body">Ермаков известен в компании как руководитель, который редко действует в одиночку и внимательно учитывает неформальный расклад сил. У него давние доверительные отношения с директором по правовым вопросам, и в спорных ситуациях он скорее прислушается к ее оценке, чем к аргументам проектной команды. Поэтому его позиция по ИИ-ассистенту складывается не только из требований безопасности, но и из того, как на проект смотрит юридическая функция. Если Белова будет говорить о подрыве роли юристов и росте правовых рисков, Ермаков почти наверняка усилит ограничения. Снаружи это будет выглядеть как профессиональная осторожность, но внутри компании многие понимают, что здесь работает и личный альянс. Для проекта такая связка делает его влияние особенно чувствительным.</div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <svg class="avatar" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="#1a1525"/><circle cx="26" cy="19" r="9" fill="#c084fc" opacity="0.85"/><ellipse cx="26" cy="40" rx="14" ry="9" fill="#c084fc" opacity="0.65"/><circle cx="22" cy="25" r="2.5" fill="none" stroke="#c084fc" stroke-width="1.2" opacity="0.9"/><circle cx="30" cy="25" r="2.5" fill="none" stroke="#c084fc" stroke-width="1.2" opacity="0.9"/><path d="M18 34 Q20 30 22 30 Q26 30 30 30 Q32 30 34 34" fill="none" stroke="#c084fc" stroke-width="1.2" stroke-linecap="round" opacity="0.9"/></svg>
+          <div class="card-title"><div class="name">HR-специалисты сервисных центров</div><div class="role">Группа стейкхолдеров</div></div>
+        </div>
+        <div class="card-body">Крылова руководит группой HR-специалистов, которые ежедневно отвечают на десятки однотипных запросов по отпускам, льготам, кадровым процедурам и внутренним правилам. С одной стороны, команда устала от постоянной операционной перегрузки и была бы рада инструменту, который снимет поток повторяющихся обращений. С другой стороны, многие сотрудники службы не понимают, чем именно они будут заниматься, если значительная часть типовых ответов уйдет в цифровой канал. Внутри команды уже обсуждают, не приведет ли проект к пересмотру численности или изменению роли сервисного блока. Поэтому отношение к ИИ-ассистенту здесь смешанное: любопытство сочетается с настороженностью. От того, как будет подана логика изменений, зависит, станет ли этот блок союзником проекта.</div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <svg class="avatar" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="#0f1520"/><circle cx="26" cy="19" r="9" fill="#7c3aed" opacity="0.85"/><ellipse cx="26" cy="40" rx="14" ry="9" fill="#7c3aed" opacity="0.65"/><polyline points="20,32 20,25 27,25" fill="none" stroke="#7c3aed" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/><line x1="20" y1="32" x2="32" y2="20" stroke="#7c3aed" stroke-width="1.3" stroke-linecap="round" opacity="0.9"/><polyline points="32,20 32,27 25,27" fill="none" stroke="#7c3aed" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/></svg>
+          <div class="card-title"><div class="name">ИТ-интегратор</div><div class="role">Группа стейкхолдеров</div></div>
+        </div>
+        <div class="card-body">Фролов отвечает за внедрение решения и видит в проекте не только текущую задачу, но и возможность расширить объем работ в компании. Он охотно предлагает дополнительные модули, интеграции и доработки, которые делают проект более масштабным и технически интересным. С его точки зрения, чем шире периметр, тем выше ценность создаваемой системы. Однако именно такой подход способен быстро превратить управляемый пилот в сложную трансформационную программу со множеством зависимостей. Фролов умеет снижать остроту обсуждения рисков, переводя разговор в плоскость технической решаемости. Для проектной команды его энтузиазм полезен, но только если кто-то внутри компании удерживает рамку и не дает проекту расползтись.</div>
+      </div>
+    </div>
+    <div class="task-box">
+      <div class="task-title"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="12" height="12" rx="2" stroke="#8b5cf6" stroke-width="1.4"/><path d="M4.5 7.5h6M4.5 5h6M4.5 10h4" stroke="#8b5cf6" stroke-width="1.2" stroke-linecap="round"/></svg>Задание для команды</div>
+      <ol>
+        <li><strong>Прочитайте</strong> описание всех ваших стейкхолдеров</li>
+        <li><strong>Опишите</strong> их интерес к проекту и риски/действия, которые они могут предпринять по отношению к проекту</li>
+        <li><strong>Оцените</strong> по шкале от 1 до 10 их интерес к проекту и их влияние на проект</li>
+        <li><strong>Будьте готовы</strong> рассказать всей группе</li>
+      </ol>
+      <div class="timer-badge"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6.5" r="4.5" stroke="#f0c040" stroke-width="1.2"/><path d="M6 4V6.5l1.5 1.5" stroke="#f0c040" stroke-width="1.2" stroke-linecap="round"/><path d="M4 1.5h4" stroke="#f0c040" stroke-width="1.2" stroke-linecap="round"/></svg>10 минут на задание</div>
+    </div>
+  </div>
+
+</div>
